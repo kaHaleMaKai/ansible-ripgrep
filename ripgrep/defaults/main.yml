@@ -1,0 +1,4 @@
+---
+
+ripgrep_dir: "{{ ansible_user_dir }}/git/ripgrep"
+ripgrep_link: "{{ ansible_user_dir }}/bin/rg"

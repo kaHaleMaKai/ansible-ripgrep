@@ -1,0 +1,30 @@
+---
+
+- name: check if ripgrep is installed
+  stat:
+    path: "{{ ripgrep_link }}"
+  register: rg
+
+- name: git clone ripgrep
+  git:
+    repo: "git://github.com/BurntSushi/ripgrep"
+    dest: "{{ ripgrep_dir }}"
+    depth: 1
+  when: rg.stat.islnk is not defined
+
+- name: build ripgrep
+  command: >
+    rustup run nightly cargo build --release --features simd-accel
+  environment:
+    RUSTFLAGS: "-C target-cpu=native"
+  args:
+    chdir: "{{ ripgrep_dir }}"
+    creates: "{{ ripgrep_dir }}/target/release/rg"
+  when: rg.stat.islnk is not defined
+
+- name: link into ~/bin
+  file:
+    src="{{ ripgrep_dir }}/target/release/rg"
+    dest="{{ ripgrep_link }}"
+    state=link
+  when: rg.stat.islnk is not defined
